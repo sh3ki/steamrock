@@ -23,6 +23,10 @@ const blogSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  youtubeUrl: {
+    type: String,
+    default: ''
+  },
   category: {
     type: String,
     enum: ['Real Estate Tips', 'Market Updates', 'Investment Guide', 'Property Showcase', 'Company News', 'Lifestyle'],
