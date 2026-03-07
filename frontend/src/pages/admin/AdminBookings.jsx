@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToast } from '../../components/Toast';
-import { FiCalendar, FiClock, FiUser, FiMail, FiPhone, FiCheck, FiX, FiEye, FiTrash2, FiMapPin, FiMessageCircle, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUser, FiMail, FiPhone, FiCheck, FiX, FiEye, FiTrash2, FiMapPin, FiMessageCircle, FiCheckCircle, FiAlertCircle, FiSend } from 'react-icons/fi';
 
 const AdminBookings = () => {
   const toast = useToast();
@@ -24,6 +24,9 @@ const AdminBookings = () => {
     status: '',
     adminNotes: ''
   });
+  const [emailModal, setEmailModal] = useState(null); // holds the booking to email
+  const [emailData, setEmailData] = useState({ subject: '', message: '' });
+  const [emailSending, setEmailSending] = useState(false);
 
   const statuses = ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'];
 
@@ -86,6 +89,27 @@ const AdminBookings = () => {
       console.error('Error updating booking:', error);
       toast.error('Failed to update booking status');
     }
+  };
+
+  const openEmailModal = (booking) => {
+    setEmailModal(booking);
+    setEmailData({
+      subject: `Regarding Your Booking – ${booking.projectName || 'Streamrock Realty'}`,
+      message: `Dear ${booking.name},\n\nThank you for your interest in ${booking.projectName || 'our properties'}.\n\n`
+    });
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailData.subject.trim() || !emailData.message.trim()) return;
+    setEmailSending(true);
+    try {
+      await axios.post(`/bookings/${emailModal._id}/send-email`, emailData);
+      toast.success(`Email sent to ${emailModal.email}`);
+      setEmailModal(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send email');
+    }
+    setEmailSending(false);
   };
 
   const handleDelete = async (id) => {
@@ -284,6 +308,13 @@ const AdminBookings = () => {
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
                           <button
+                            onClick={() => openEmailModal(booking)}
+                            title={`Email ${booking.email}`}
+                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            <FiMail className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => openBookingModal(booking)}
                             className="p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                           >
@@ -409,6 +440,73 @@ const AdminBookings = () => {
                     Update & Notify
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Email Compose Modal */}
+        {emailModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <FiMail className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Compose Email</h2>
+                    <p className="text-xs text-gray-500">To: {emailModal.name} &lt;{emailModal.email}&gt;</p>
+                  </div>
+                </div>
+                <button onClick={() => setEmailModal(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="px-6 py-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    value={emailData.subject}
+                    onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none text-sm"
+                    placeholder="Email subject..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                  <textarea
+                    value={emailData.message}
+                    onChange={(e) => setEmailData({ ...emailData, message: e.target.value })}
+                    rows={8}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none text-sm resize-none"
+                    placeholder="Write your message..."
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+                <button
+                  onClick={() => setEmailModal(null)}
+                  className="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors font-medium text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={emailSending || !emailData.subject.trim() || !emailData.message.trim()}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl transition-colors font-medium text-sm flex items-center gap-2"
+                >
+                  {emailSending ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending...</>
+                  ) : (
+                    <><FiSend className="w-4 h-4" /> Send Email</>
+                  )}
+                </button>
               </div>
             </div>
           </div>
