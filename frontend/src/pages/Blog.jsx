@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { AnimatedSection } from '../hooks/useScrollAnimation';
-import { FaCalendar, FaUser, FaEye, FaSearch, FaArrowRight } from 'react-icons/fa';
+import { FaCalendar, FaUser, FaEye, FaSearch, FaArrowRight, FaPlay, FaYoutube } from 'react-icons/fa';
 
 const Blog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,6 +13,12 @@ const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const activeCategory = searchParams.get('category') || '';
+  const [playingId, setPlayingId] = useState(null);
+
+  const getYoutubeId = (url) => {
+    const match = url?.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match?.[1] || null;
+  };
 
   useEffect(() => {
     fetchBlogs();
@@ -110,17 +116,56 @@ const Blog = () => {
                   <AnimatedSection key={blog._id} animation="fade-in-up" delay={index * 100}>
                     <article className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
                       <div className="md:flex">
-                        <div className="md:w-1/3">
-                          <Link to={`/blog/${blog.slug}`}>
-                            <div className="aspect-[4/3] md:aspect-auto md:h-full">
-                              <img
-                                src={blog.featuredImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}
-                                alt={blog.title}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                              />
+                        {(() => {
+                          const videoId = blog.youtubeUrl ? getYoutubeId(blog.youtubeUrl) : null;
+                          if (videoId && playingId === blog._id) {
+                            return (
+                              <div className="md:w-1/3 aspect-video md:aspect-auto">
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                                  title={blog.title}
+                                  allow="autoplay; encrypted-media; picture-in-picture"
+                                  allowFullScreen
+                                  className="w-full h-full min-h-[200px]"
+                                />
+                              </div>
+                            );
+                          }
+                          if (videoId) {
+                            return (
+                              <div className="md:w-1/3">
+                                <button
+                                  onClick={() => setPlayingId(blog._id)}
+                                  className="relative w-full block overflow-hidden aspect-[4/3] md:aspect-auto md:h-full group"
+                                >
+                                  <img
+                                    src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                    alt={blog.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                                    <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                      <FaPlay className="text-white text-lg ml-1" />
+                                    </div>
+                                  </div>
+                                </button>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="md:w-1/3">
+                              <Link to={`/blog/${blog.slug}`}>
+                                <div className="aspect-[4/3] md:aspect-auto md:h-full overflow-hidden">
+                                  <img
+                                    src={blog.featuredImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}
+                                    alt={blog.title}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                  />
+                                </div>
+                              </Link>
                             </div>
-                          </Link>
-                        </div>
+                          );
+                        })()}
                         <div className="md:w-2/3 p-6">
                           <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                             <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
@@ -150,12 +195,24 @@ const Blog = () => {
                                 {blog.views || 0} views
                               </span>
                             </div>
-                            <Link
-                              to={`/blog/${blog.slug}`}
-                              className="text-primary font-medium text-sm flex items-center gap-1 hover:gap-2 transition-all"
-                            >
-                              Read More <FaArrowRight className="text-xs" />
-                            </Link>
+                            <div className="flex items-center gap-3">
+                              {blog.youtubeUrl && (
+                                <a
+                                  href={blog.youtubeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-red-600 font-medium text-sm flex items-center gap-1 hover:text-red-700"
+                                >
+                                  <FaYoutube /> YouTube
+                                </a>
+                              )}
+                              <Link
+                                to={`/blog/${blog.slug}`}
+                                className="text-primary font-medium text-sm flex items-center gap-1 hover:gap-2 transition-all"
+                              >
+                                Read More <FaArrowRight className="text-xs" />
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
