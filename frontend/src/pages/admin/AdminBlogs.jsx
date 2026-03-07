@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToast } from '../../components/Toast';
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiImage, FiFilter, FiFileText, FiCheckCircle, FiClock, FiX } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiImage, FiFilter, FiFileText, FiCheckCircle, FiClock, FiX, FiYoutube } from 'react-icons/fi';
 
 const AdminBlogs = () => {
   const toast = useToast();
@@ -26,6 +26,7 @@ const AdminBlogs = () => {
     excerpt: '',
     content: '',
     featuredImage: '',
+    youtubeUrl: '',
     category: 'Real Estate Tips',
     tags: '',
     status: 'Draft',
@@ -73,6 +74,7 @@ const AdminBlogs = () => {
         excerpt: blog.excerpt || '',
         content: blog.content || '',
         featuredImage: blog.featuredImage || '',
+        youtubeUrl: blog.youtubeUrl || '',
         category: blog.category || 'Real Estate Tips',
         tags: blog.tags?.join(', ') || '',
         status: blog.status || 'Draft',
@@ -86,6 +88,7 @@ const AdminBlogs = () => {
         excerpt: '',
         content: '',
         featuredImage: '',
+        youtubeUrl: '',
         category: 'Real Estate Tips',
         tags: '',
         status: 'Draft',
@@ -147,6 +150,11 @@ const AdminBlogs = () => {
       console.error('Error uploading image:', error);
       toast.error('Failed to upload image');
     }
+  };
+
+  const getYoutubeId = (url) => {
+    const match = url?.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match?.[1] || null;
   };
 
   const getStatusColor = (status) => {
@@ -299,9 +307,16 @@ const AdminBlogs = () => {
                     <tr key={blog._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
                             {blog.featuredImage ? (
                               <img src={blog.featuredImage} alt={blog.title} className="w-full h-full object-cover" />
+                            ) : blog.youtubeUrl && getYoutubeId(blog.youtubeUrl) ? (
+                              <>
+                                <img src={`https://img.youtube.com/vi/${getYoutubeId(blog.youtubeUrl)}/hqdefault.jpg`} alt={blog.title} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                  <FiYoutube className="w-5 h-5 text-red-500" />
+                                </div>
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-400">
                                 <FiImage className="w-6 h-6" />
@@ -464,6 +479,23 @@ const AdminBlogs = () => {
                         <option key={status} value={status}>{status}</option>
                       ))}
                     </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      YouTube URL <span className="text-gray-400 font-normal">(optional — for video posts)</span>
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <FiYoutube className="text-red-500 w-5 h-5 flex-shrink-0" />
+                      <input
+                        type="url"
+                        value={formData.youtubeUrl}
+                        onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
+                        className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Paste a YouTube link to embed a video player in this post. Leave blank for a regular blog post.</p>
                   </div>
 
                   <div className="md:col-span-2 border-t border-gray-100 pt-6">
