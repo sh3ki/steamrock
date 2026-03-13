@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { AnimatedSection } from '../hooks/useScrollAnimation';
 import { FaCalendar, FaUser, FaEye, FaSearch, FaArrowRight, FaPlay, FaYoutube } from 'react-icons/fa';
 
 const Blog = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -114,7 +115,10 @@ const Blog = () => {
               <div className="space-y-8">
                 {blogs.map((blog, index) => (
                   <AnimatedSection key={blog._id} animation="fade-in-up" delay={index * 100}>
-                    <article className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
+                    <article
+                      onClick={() => navigate(`/blog/${blog.slug}`)}
+                      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    >
                       <div className="md:flex">
                         {(() => {
                           const videoId = blog.youtubeUrl ? getYoutubeId(blog.youtubeUrl) : null;
@@ -135,7 +139,10 @@ const Blog = () => {
                             return (
                               <div className="md:w-1/3">
                                 <button
-                                  onClick={() => setPlayingId(blog._id)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setPlayingId(blog._id);
+                                  }}
                                   className="relative w-full block overflow-hidden aspect-[4/3] md:aspect-auto md:h-full group"
                                 >
                                   <img
@@ -176,7 +183,10 @@ const Blog = () => {
                               {formatDate(blog.createdAt)}
                             </span>
                           </div>
-                          <Link to={`/blog/${blog.slug}`}>
+                          <Link
+                            to={`/blog/${blog.slug}`}
+                            onClick={(event) => event.stopPropagation()}
+                          >
                             <h2 className="text-xl font-serif font-bold text-gray-900 hover:text-primary transition-colors mb-3">
                               {blog.title}
                             </h2>
@@ -201,6 +211,7 @@ const Blog = () => {
                                   href={blog.youtubeUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  onClick={(event) => event.stopPropagation()}
                                   className="text-red-600 font-medium text-sm flex items-center gap-1 hover:text-red-700"
                                 >
                                   <FaYoutube /> YouTube
@@ -208,6 +219,7 @@ const Blog = () => {
                               )}
                               <Link
                                 to={`/blog/${blog.slug}`}
+                                onClick={(event) => event.stopPropagation()}
                                 className="text-primary font-medium text-sm flex items-center gap-1 hover:gap-2 transition-all"
                               >
                                 Read More <FaArrowRight className="text-xs" />
