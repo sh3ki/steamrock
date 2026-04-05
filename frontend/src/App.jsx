@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
 import ScrollToTop from './components/ScrollToTop';
+import RockyAIChatbot from './components/RockyAIChatbot';
 import { ToastProvider } from './components/Toast';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
@@ -33,6 +34,7 @@ const PublicLayout = ({ children }) => (
     <Navbar />
     <main className="flex-grow">{children}</main>
     <Footer />
+    <RockyAIChatbot />
     <ScrollToTop />
   </div>
 );
