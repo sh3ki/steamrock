@@ -109,6 +109,30 @@ const DEFAULT_FAQS = [
   }
 ];
 
+const STREAMROCK_COMPANY_PROFILE = {
+  foundedYear: 2012,
+  legalDescription: 'Streamrock Realty Corporation is a duly licensed real estate brokerage firm founded by a family of seasoned real estate practitioners.',
+  founderAndLead: 'Danilo B. Llaneta (Licensed Real Estate Broker, Certified Public Accountant)',
+  background: 'The company started as a focused brokerage for Amaia Land developments and expanded through consistent performance and client-first service.',
+  accreditedDevelopers: [
+    'Ayala Land',
+    'Alveo Land',
+    'Avida Land',
+    'Amaia Land',
+    'Landco Pacific Corporation',
+    'Cathay Land Inc.'
+  ],
+  valueProposition: 'With over a decade of experience, Streamrock Realty provides expert guidance, market insight, and personalized service to help clients make informed real estate decisions.',
+  leadershipTeam: [
+    { name: 'Danilo B. Llaneta', role: 'President & Chief Executive Officer' },
+    { name: 'Dave William D. Llaneta', role: 'Vice President' },
+    { name: 'Christia Marielle D. Llaneta', role: 'Corporate Secretary' },
+    { name: 'Conchita D. Llaneta', role: 'Treasurer' },
+    { name: 'Danesren Cris D. Llaneta', role: 'Incorporator' }
+  ],
+  commitment: 'At Streamrock Realty, we go beyond selling properties. We build trust, create opportunities, and help turn real estate goals into reality.'
+};
+
 const safeNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -192,8 +216,19 @@ const isSystemRelatedMessage = (userMessage, projectNames = [], contextKeywords 
   return false;
 };
 
+const normalizeAssistantReply = (replyText) => {
+  return String(replyText || '')
+    .replace(/[•●◦▪]/g, '-')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\u00A0/g, ' ')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+};
+
 const ensureSchedulePrompt = (replyText) => {
-  const response = (replyText || '').trim();
+  const response = normalizeAssistantReply(replyText);
   if (!response) {
     return 'I can help you with Streamrock system information. Would you like to schedule a meeting for a full in-depth clarification and details of units and projects?';
   }
@@ -287,7 +322,8 @@ const buildAssistantContext = async () => {
       scope: 'Answer only with Streamrock system-related information and data in this context.',
       recommendationMode: 'Recommend projects/properties based on user budget, location, and property type.',
       meetingCTA: 'Always ask if user wants to schedule a meeting for full in-depth clarification.'
-    }
+    },
+    companyProfile: STREAMROCK_COMPANY_PROFILE
   };
 
   return context;
@@ -302,7 +338,10 @@ const buildSystemPrompt = (context) => {
     'If a user asks for anything unrelated, politely decline and redirect them to Streamrock projects/properties/contact topics.',
     'Use only facts from the provided live context. Do not invent missing details.',
     'When user intent is about finding a unit/project, be suggestive and recommend best-fit options based on budget, location, and property type.',
+    'If asked about Streamrock company background, partnerships, leadership, or commitment, use the companyProfile in the live context.',
     'Whenever possible, include relevant links using full URLs under https://www.streamrockrealty.com so users can click and navigate quickly.',
+    'Keep responses clear and organized with short sections and concise bullet points using only "-" for bullets.',
+    'Avoid decorative symbols, special characters, and vague filler text.',
     'Always end every response by asking if they want to schedule a meeting for a full in-depth clarification and details of units/projects.',
     'Keep tone concise, warm, and professional.',
     `Live context JSON: ${contextJson}`
