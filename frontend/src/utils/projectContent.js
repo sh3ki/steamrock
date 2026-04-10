@@ -231,6 +231,17 @@ export const createDefaultProjectFormData = () => ({
   lotSizeRange: { min: '', max: '', unit: 'sqm' },
   totalArea: { value: '', unit: 'Hectares' },
   priceRange: { min: '', max: '', currency: 'PHP' },
+  featuredProperty: {
+    propertyType: 'Lot',
+    title: '',
+    description: '',
+    location: '',
+    price: '',
+    lotArea: '',
+    floorArea: '',
+    unitSizeArea: '',
+    unitSizeRange: ''
+  },
   hero: { image: '', video: '', title: '', subtitle: '' },
   youtubeUrl: '',
   cardImage: '',
@@ -268,6 +279,10 @@ export const normalizeProjectForForm = (project = {}) => {
     priceRange: {
       ...defaults.priceRange,
       ...project.priceRange
+    },
+    featuredProperty: {
+      ...defaults.featuredProperty,
+      ...project.featuredProperty
     },
     hero: {
       ...defaults.hero,
