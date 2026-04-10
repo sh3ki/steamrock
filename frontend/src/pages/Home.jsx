@@ -34,6 +34,18 @@ const Home = () => {
   const getProjectsByCategory = (category) =>
     projects.filter((p) => p.category === category);
 
+  const featuredProjects = projects.filter((project) => project.featured);
+
+  const formatPrice = (value) => {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
   return (
     <div className="bg-white">
       <Hero />
@@ -121,6 +133,89 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Featured Units */}
+      {!loading && featuredProjects.length > 0 && (
+        <section className="py-20 bg-white border-t border-gray-100">
+          <div className="container-custom">
+            <AnimatedSection animation="fade-in-up" className="text-center mb-12">
+              <span className="text-primary text-xs tracking-[0.3em] uppercase font-semibold">Featured Property</span>
+              <h2 className="mt-3 text-3xl md:text-4xl font-serif font-bold text-gray-900">
+                Nature-inspired communities
+              </h2>
+              <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+                Explore highlighted units with concise details curated from our featured project listings.
+              </p>
+            </AnimatedSection>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProjects.map((project) => {
+                const details = project.featuredProperty || {};
+                const type = details.propertyType || project.propertyType || 'Property';
+                const locationText = details.location || [project.location?.city, project.location?.province].filter(Boolean).join(', ');
+                const priceText = formatPrice(details.price) || (
+                  Number.isFinite(Number(project.priceRange?.min))
+                    ? formatPrice(project.priceRange.min)
+                    : null
+                );
+
+                return (
+                  <Link
+                    key={project._id}
+                    to={`/projects/${project._id}`}
+                    className="group block rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-all"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden rounded-t-xl bg-gray-100">
+                      <img
+                        src={project.cardImage || project.hero?.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800'}
+                        alt={details.title || project.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+
+                    <div className="p-5 space-y-2">
+                      <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">{type}</p>
+                      <h3 className="text-lg font-serif font-bold text-gray-900 line-clamp-2">
+                        {details.title || project.name}
+                      </h3>
+
+                      {locationText && (
+                        <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                          <FaMapMarkerAlt className="text-xs text-primary" />
+                          {locationText}
+                        </p>
+                      )}
+
+                      {details.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{details.description}</p>
+                      )}
+
+                      <div className="pt-2 text-sm text-gray-700 space-y-1">
+                        {priceText && <p><span className="font-semibold">Price:</span> {priceText}</p>}
+                        {type === 'Condo' ? (
+                          <>
+                            {details.unitSizeArea && <p><span className="font-semibold">Unit Size Area:</span> {details.unitSizeArea} sqm</p>}
+                            {details.unitSizeRange && <p><span className="font-semibold">Unit Size Range:</span> {details.unitSizeRange}</p>}
+                          </>
+                        ) : (
+                          <>
+                            {details.lotArea && <p><span className="font-semibold">Lot Area:</span> {details.lotArea} sqm</p>}
+                            {details.floorArea && <p><span className="font-semibold">Floor Area:</span> {details.floorArea} sqm</p>}
+                          </>
+                        )}
+                      </div>
+
+                      <p className="pt-2 text-primary font-medium text-sm inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                        View Project <FaArrowRight className="text-xs" />
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Projects by Category */}
       {!loading && categories.map((cat) => {
