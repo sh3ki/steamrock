@@ -5,20 +5,31 @@ const Booking = require('../models/Booking');
 const { protect, adminOnly } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 
+const EMAIL_USER = String(process.env.EMAIL_USER || '').trim();
+const EMAIL_PASS = String(process.env.EMAIL_PASS || '').trim();
+const hasEmailConfig = Boolean(EMAIL_USER && EMAIL_PASS);
+
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'grafrafraftorres28@gmail.com',
-    pass: process.env.EMAIL_PASS || 'cssv jcji bckp tgqw'
+    user: EMAIL_USER,
+    pass: EMAIL_PASS
   }
 });
 
 // Send email helper function
 const sendEmail = async (to, subject, html) => {
   try {
+    if (!hasEmailConfig) {
+      return {
+        ok: false,
+        error: new Error('Email credentials are missing. Set EMAIL_USER and EMAIL_PASS in backend/.env')
+      };
+    }
+
     await transporter.sendMail({
-      from: `"Streamrock Realty" <${process.env.EMAIL_USER || 'grafrafraftorres28@gmail.com'}>`,
+      from: `"Streamrock Realty" <${EMAIL_USER}>`,
       to,
       subject,
       html
