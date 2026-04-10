@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const { protect, adminOnly } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
@@ -22,12 +23,19 @@ const sendEmail = async (to, subject, html) => {
       subject,
       html
     });
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error('Email sending error:', error);
-    return false;
+    return { ok: false, error };
   }
 };
+
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 // @route   GET /api/bookings
 // @desc    Get all bookings (admin only)
@@ -108,13 +116,22 @@ router.get('/unread-count', protect, adminOnly, async (req, res) => {
 // @access  Private
 router.post('/:id/send-email', protect, adminOnly, async (req, res) => {
   try {
-    const { subject, message } = req.body;
-    if (!subject?.trim() || !message?.trim()) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid booking ID' });
+    }
+
+    const subject = String(req.body?.subject || '').trim();
+    const message = String(req.body?.message || '').trim();
+
+    if (!subject || !message) {
       return res.status(400).json({ message: 'Subject and message are required' });
     }
 
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    const safeName = escapeHtml(booking.name || 'Client');
+    const safeMessage = escapeHtml(message);
 
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
@@ -122,8 +139,8 @@ router.post('/:id/send-email', protect, adminOnly, async (req, res) => {
           <h2 style="margin:0;font-size:20px;">Streamrock Realty</h2>
         </div>
         <div style="background:#f7fafc;padding:28px;border-radius:0 0 12px 12px;">
-          <p style="color:#4a5568;margin:0 0 12px;">Dear <strong>${booking.name}</strong>,</p>
-          <div style="white-space:pre-wrap;color:#2d3748;line-height:1.7;">${message}</div>
+          <p style="color:#4a5568;margin:0 0 12px;">Dear <strong>${safeName}</strong>,</p>
+          <div style="white-space:pre-wrap;color:#2d3748;line-height:1.7;">${safeMessage}</div>
           <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
           <p style="color:#718096;font-size:13px;margin:0;">Streamrock Realty Corporation<br/>📞 +63 908 885 6169</p>
         </div>
@@ -131,8 +148,13 @@ router.post('/:id/send-email', protect, adminOnly, async (req, res) => {
       </div>
     `;
 
-    const sent = await sendEmail(booking.email, subject, html);
-    if (!sent) return res.status(500).json({ message: 'Failed to send email' });
+    const sent = await sendEmail(String(booking.email || '').trim(), subject, html);
+    if (!sent.ok) {
+      const reason = sent.error?.response || sent.error?.message || 'SMTP transport failure';
+      return res.status(500).json({
+        message: `Failed to send email: ${reason}`
+      });
+    }
 
     res.json({ message: 'Email sent successfully' });
   } catch (error) {
