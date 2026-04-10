@@ -269,7 +269,7 @@ const ProjectDetail = () => {
                       className="flex items-center gap-3 text-gray-600 transition-colors hover:text-primary"
                     >
                       <FaPhone className="text-primary" />
-                      +63 912 345 6789
+                      +63 908 885 6169
                     </a>
                     <a
                       href="mailto:dwllaneta@gmail.com"
