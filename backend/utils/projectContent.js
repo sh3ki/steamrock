@@ -254,6 +254,17 @@ const normalizeProjectPayload = (payload = {}) => {
       max: toNumber(payload.priceRange?.max),
       currency: asString(payload.priceRange?.currency) || 'PHP'
     },
+    featuredProperty: {
+      propertyType: asString(payload.featuredProperty?.propertyType) || 'Lot',
+      title: asString(payload.featuredProperty?.title),
+      description: asString(payload.featuredProperty?.description),
+      location: asString(payload.featuredProperty?.location),
+      price: toNumber(payload.featuredProperty?.price),
+      lotArea: toNumber(payload.featuredProperty?.lotArea),
+      floorArea: toNumber(payload.featuredProperty?.floorArea),
+      unitSizeArea: toNumber(payload.featuredProperty?.unitSizeArea),
+      unitSizeRange: asString(payload.featuredProperty?.unitSizeRange)
+    },
     hero,
     cardImage: asString(payload.cardImage) || hero.image,
     sections,
