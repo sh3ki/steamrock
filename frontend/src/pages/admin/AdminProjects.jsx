@@ -297,6 +297,9 @@ const AdminProjects = () => {
         )}
 
         <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-blue-100 bg-blue-50/70 px-6 py-3 text-sm text-blue-900">
+            To set Condo details (CRUD): click the Edit icon for a project, then go to "Featured Property Details" and choose "Condo".
+          </div>
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
@@ -332,6 +335,7 @@ const AdminProjects = () => {
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Category</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Developer</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Featured</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Featured Type</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Created</th>
                     <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
@@ -381,6 +385,11 @@ const AdminProjects = () => {
                         ) : (
                           <span className="text-xs text-gray-400">No</span>
                         )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {project.featuredProperty?.propertyType || '-'}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <select
