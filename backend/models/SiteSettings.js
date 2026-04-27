@@ -107,6 +107,9 @@ const SiteSettingsSchema = new mongoose.Schema({
     Peaks: { type: String, default: '' }
   },
 
+  // Homepage Section Images
+  aboutImage: { type: String, default: '' },
+
   // SEO
   seo: {
     title: { type: String },
