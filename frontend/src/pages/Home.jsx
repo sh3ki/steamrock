@@ -9,6 +9,7 @@ import { FaTree, FaWater, FaSun, FaMountain, FaMapMarkerAlt, FaArrowRight, FaChe
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aboutImage, setAboutImage] = useState('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800');
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -21,7 +22,14 @@ const Home = () => {
       }
       setLoading(false);
     };
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/settings');
+        if (res.data?.aboutImage) setAboutImage(res.data.aboutImage);
+      } catch {/* keep default */}
+    };
     fetchProjects();
+    fetchSettings();
   }, []);
 
   const categories = [
@@ -120,7 +128,7 @@ const Home = () => {
             <AnimatedSection animation="slide-in-right" delay={200} className="relative">
               <div className="aspect-[4/3] overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800"
+                  src={aboutImage}
                   alt="Luxury Property"
                   className="w-full h-full object-cover"
                 />
